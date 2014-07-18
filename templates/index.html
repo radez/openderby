@@ -1,0 +1,24 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+  <table>
+    <tr>
+      <td>
+  {% for group in heats|groupby('id') %}
+  Heat {{ group.grouper }}<br>
+  {% for heat in group.list %}
+  Lane {{ heat.lane }}: {{ heat.car }}<br>
+  {% endfor %}
+  {% else %}
+    <em>Unbelievable.  No entries here so far</em>
+  {% endfor %}
+      </td>
+      <td>
+  {% for car in cars %}
+  {{ car.0.name }}: {{ car.1 }} heats<br>
+  {% else %}
+    <em>Unbelievable.  No entries here so far</em>
+  {% endfor %}
+      </td>
+    </tr>
+  </table>
+{% endblock %}
