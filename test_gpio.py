@@ -8,7 +8,19 @@ from datetime import datetime
 import RPi.GPIO as GPIO 
 GPIO.setmode(GPIO.BCM)
 
-LANE_GPIO_PORTS = [18,17,27,22,23,24]
+# GPIO port assignments
+START = 25
+LANE1 = 18
+LANE2 = 17
+LANE3 = 27
+LANE4 = 22
+LANE5 = 23
+LANE6 = 24
+
+LANE_GPIO_PORTS = [LANE1,LANE2,LANE3,LANE4,LANE5,LANE6]
+LANES = {LANE1: 1, LANE2: 2,
+         LANE3: 3, LANE4: 4,
+         LANE5: 5, LANE6: 6 }
 
 
 START_TIME = 0
@@ -18,15 +30,15 @@ SHOWN_TIMES = []
 # GPIO 23 & 17 set up as inputs, pulled up to avoid false detection.
 # Both ports are wired to connect to GND on button press.
 # So we'll be setting up falling edge detection for both
-GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(LANE1, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(LANE2, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(LANE3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(LANE4, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(LANE5, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(LANE6, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 # GPIO 24 set up as an input, pulled down, connected to 3V3 on button press  
-GPIO.setup(25, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(START, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 def ready_or_not(port):
     msg = 'READY'
@@ -43,41 +55,20 @@ while 1:
     if reduce(lambda x,y: x and GPIO.input(y), LANE_GPIO_PORTS):
         break 
 
-
-#def start_callback(channel):
-    
-def lane1_callback(channel):
-    finish(1)
-
-def lane2_callback(channel):
-    finish(2)
-
-def lane3_callback(channel):
-    finish(3)
-
-def lane4_callback(channel):
-    finish(4)
-
-def lane5_callback(channel):
-    finish(5)
-
-def lane6_callback(channel):
-    finish(6)
-
-def finish(lane):
-    if START_TIME and lane not in LANE_TIMES:
-        LANE_TIMES[lane] = datetime.now()
+def finishline_callback(port):
+    if START_TIME and port not in LANE_TIMES:
+        LANE_TIMES[port] = datetime.now()
         
 
 ## when a rising edge is detected on a lane port the starter callback will be run
 #GPIO.add_event_detect(25, GPIO.RISING, callback=start_callback, bouncetime=300)
 # when a falling edge is detected on a lane port the finish callback will be run
-GPIO.add_event_detect(18, GPIO.FALLING, callback=lane1_callback, bouncetime=300)
-GPIO.add_event_detect(17, GPIO.FALLING, callback=lane2_callback, bouncetime=300)
-GPIO.add_event_detect(27, GPIO.FALLING, callback=lane3_callback, bouncetime=300)
-GPIO.add_event_detect(22, GPIO.FALLING, callback=lane4_callback, bouncetime=300)
-GPIO.add_event_detect(23, GPIO.FALLING, callback=lane5_callback, bouncetime=300)
-GPIO.add_event_detect(24, GPIO.FALLING, callback=lane6_callback, bouncetime=300)
+GPIO.add_event_detect(LANE1, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
+GPIO.add_event_detect(LANE2, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
+GPIO.add_event_detect(LANE3, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
+GPIO.add_event_detect(LANE4, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
+GPIO.add_event_detect(LANE5, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
+GPIO.add_event_detect(LANE6, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
 
 while 1:
 
@@ -90,15 +81,15 @@ while 1:
             sys.stdout.flush()
         else:
             print "Waiting for start"
-            GPIO.wait_for_edge(25, GPIO.RISING)
+            GPIO.wait_for_edge(START, GPIO.RISING)
             if not START_TIME:
                 START_TIME = datetime.now()
                 print "Go!"
-        for lane in LANE_TIMES:
-            if lane not in SHOWN_TIMES: 
-                d = LANE_TIMES[lane] - START_TIME
-                print "\rlane %i finished in %i.%i seconds" % (lane, d.seconds, d.microseconds)
-                SHOWN_TIMES.append(lane)
+        for port in LANE_TIMES:
+            if port not in SHOWN_TIMES: 
+                d = LANE_TIMES[port] - START_TIME
+                print "\rlane %i finished in %i.%i seconds" % (LANES[port], d.seconds, d.microseconds)
+                SHOWN_TIMES.append(port)
         sleep(1)
    
     
