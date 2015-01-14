@@ -3,6 +3,8 @@
 # http://RasPi.tv/how-to-use-interrupts-with-python-on-the-raspberry-pi-and-rpi-gpio-part-3  
 import sys
 import os
+import requests
+
 from time import sleep
 from datetime import datetime
 if sys.argv[1] == 'test':
@@ -85,6 +87,11 @@ HEAT_LANES = 0
 HEAT_LANE_PORTS = []
 HEAT_CT = 0
 
+# starting socket server to serve state
+import json
+import socket
+import sys
+
 while 1:
 
     try:
@@ -107,7 +114,12 @@ while 1:
                 for port in LANE_TIMES:
                     if port in HEAT_LANE_PORTS and port not in SHOWN_TIMES: 
                         d = LANE_TIMES[port] - START_TIME
-                        print "\rlane %i: %i.%i" % (LANES[port], d.seconds, d.microseconds)
+                        heat = Heat.query.filter_by(id=HEAT, category=CATEGORY.id, lane=LANES[port]).first()
+                        heat.time = float("%i.%i" % (d.seconds, d.microseconds)) 
+                        db.session.add(heat)
+                        db.session.commit()
+                        print "\rLane %i: %f" % (LANES[port], heat.time)
+                        print "\rLane %i: %i.%i" % (LANES[port], d.seconds, d.microseconds)
                         SHOWN_TIMES.append(port)
 
         elif CATEGORY == None:
@@ -127,7 +139,10 @@ while 1:
                 else:
                     HEAT = int(heat_id) 
         else:
-            os.system('clear')
+            # update the status thread
+            r = requests.get('http://localhost:8888/status/%s/%s' % (CATEGORY.id, HEAT))
+            if r.status_code != 200:
+                print "STATUS UPDATE FAILED %s" % r.text
             print "Category: %s" % CATEGORY.name
             HEAT_CT = len(Heat.query.filter_by(category=cat_id).group_by('id').all())
             print "Total Heats: %s" % HEAT_CT
@@ -143,7 +158,7 @@ while 1:
             GPIO.wait_for_edge(START, GPIO.RISING)
             if not START_TIME:
                 START_TIME = datetime.now()
-                # need the spaces to over write
+                # need the spaces to overwrite
                 # waiting for start
                 print "\rGo!              "
         sleep(1)

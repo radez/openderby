@@ -1,3 +1,4 @@
+#!/bin/python
 from cherrypy import wsgiserver
 from openderby import app
 

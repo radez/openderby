@@ -34,6 +34,7 @@ class Heat(db.Model):
     car_id = db.Column(db.Integer, db.ForeignKey('car.id'))
     car = db.relationship('Car')
           #backref=db.backref('car', lazy='dynamic'))
+    time = db.Column(db.Float)
 
 class HeatGenView(BaseView):
     @expose('/')

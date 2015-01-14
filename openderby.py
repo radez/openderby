@@ -4,7 +4,14 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin, BaseView, expose
 from flask.ext.admin.contrib.sqla import ModelView
 
-app = Flask(__name__)
+# stackoverflow.com/questions/16469456/application-scope-variables-in-flask
+class OpenDerby(Flask):
+    def __init__(self, *args, **kwargs):
+        super(OpenDerby, self).__init__(*args, **kwargs)
+        self.current_category = None
+        self.current_heat = 0
+
+app = OpenDerby(__name__)
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/openderby'
 db = SQLAlchemy(app)
@@ -31,3 +38,13 @@ class MyView(BaseView):
 @app.route("/pit")
 def pit():
     return render_template("pit.html")
+
+@app.route("/status")
+@app.route("/status/<cat>/<heat>")
+def status(cat=None, heat=None):
+    if cat and heat:
+        app.current_category = cat
+        app.current_heat = heat
+    return render_template("status.html",
+                           category = app.current_category,
+                           heat = app.current_heat)
