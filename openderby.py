@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import render_template
+from flask.ext.cache import Cache
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin, BaseView, expose
 from flask.ext.admin.contrib.sqla import ModelView
@@ -12,12 +13,18 @@ class OpenDerby(Flask):
         self.current_heat = 0
 
 app = OpenDerby(__name__)
+
+# https://pythonhosted.org/Flask-Cache/
+cache = Cache(app,config={'CACHE_TYPE': 'simple'})
+
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/openderby'
 db = SQLAlchemy(app)
 
 from registration import Category, Car, Heat, HeatGenView
+
 @app.route("/")
+@cache.cached(timeout=5)
 def results():
     results = Heat.query.filter(Heat.time != None).order_by(Heat.category_id, Heat.id, Heat.lane)
     return render_template("results.html", results=results)
@@ -31,7 +38,6 @@ adminReg.add_view(HeatGenView(name="Heats"))
 class MyView(BaseView):
     #def is_accessible(self):
     #    return login.current_user.is_authenticated()
-
     pass
 
 @app.route("/pit")
