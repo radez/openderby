@@ -41,6 +41,7 @@ class MyView(BaseView):
     pass
 
 @app.route("/pit")
+@cache.cached(timeout=5)
 def pit():
     heats = Heat.query.filter_by(
                        category_id=app.current_category
