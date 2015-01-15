@@ -1,0 +1,20 @@
+<html lang="en">
+<head>
+    <title>OpenDerby Results</title>
+</head>
+<body>
+    <ul id="results">
+    {% for category in results|groupby('category') %}
+        <lh id="category">{{ (category.list|first()).category }}</lh>
+        {% for heat in category.list|groupby('id') %}
+            </p><lh id="heat">Heat: {{ heat[0] }}</lh>
+            {% for lane in heat.list %}
+                <li>Lane {{ lane.lane }}: {{ lane.time }} {{ lane.car.name }} ({{ lane.car.driver }})</li>
+            {% endfor %}
+        {% endfor %}
+    {% else %}
+        <lh>No Results available</lh>
+    {% endfor %}
+    </ul>
+</body>
+</html>

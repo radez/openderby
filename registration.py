@@ -29,7 +29,8 @@ class Car(db.Model):
 
 class Heat(db.Model):    
     id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.Integer, db.ForeignKey('category.id'))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    category = db.relationship('Category')
     lane = db.Column(db.Integer, primary_key=True)
     car_id = db.Column(db.Integer, db.ForeignKey('car.id'))
     car = db.relationship('Car')

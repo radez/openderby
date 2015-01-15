@@ -20,7 +20,7 @@ for category in Category.query.all():
             car_cnt = len(cars)
             if car_cnt:
                 car_index = randrange(0, car_cnt)
-                heat = Heat(id=heat_id, category=category.id, lane=lane, car=cars[car_index])
+                heat = Heat(id=heat_id, category=category, lane=lane, car=cars[car_index])
                 db.session.add(heat) 
                 db.session.commit()
 print "Complete"

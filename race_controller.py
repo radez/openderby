@@ -63,7 +63,7 @@ while 1:
         break 
 
 def finishline_callback(port):
-    if START_TIME and port not in LANE_TIMES:
+    if START_TIME and not LANE_TIMES[port]:
         LANE_TIMES[port] = datetime.now()
         
 
@@ -78,10 +78,10 @@ GPIO.add_event_detect(LANE5, GPIO.FALLING, callback=finishline_callback, bouncet
 GPIO.add_event_detect(LANE6, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
 
 START_TIME = 0
-LANE_TIMES = {}
+LANE_TIMES = dict(zip(LANE_GPIO_PORTS, [0,0,0,0,0,0]))
 SHOWN_TIMES = []
 
-CATEGORY = None
+CATEGORY = 0
 HEAT = 0
 HEAT_LANES = 0
 HEAT_LANE_PORTS = []
@@ -92,8 +92,15 @@ import json
 import socket
 import sys
 
-while 1:
+def status_update(category, heat):
+    if category:
+         category = category.id
+    r = requests.get('http://localhost:8888/status/%s/%s' % (category, heat))
+    if r.status_code != 200:
+        print "STATUS UPDATE FAILED %s" % r.text
 
+
+while 1:
     try:
         #if len(SHOWN_TIMES) >= 6:
         #    break
@@ -102,28 +109,32 @@ while 1:
                 # All lanes have gotten a time
                 # Reset for next heat
                 START_TIME = 0
-                LANE_TIMES = {}
+                LANE_TIMES = dict(zip(LANE_GPIO_PORTS, [0,0,0,0,0,0]))
                 SHOWN_TIMES = []
                 HEAT+=1
                 if HEAT > HEAT_CT:
-                    CATEGORY = None
+                    CATEGORY = 0
+                    HEAT = 0
+                    status_update(CATEGORY, HEAT)
             else:    
                 d = datetime.now() - START_TIME
                 sys.stdout.write('\r%i.%i' % (d.seconds, d.microseconds))
                 sys.stdout.flush()
                 for port in LANE_TIMES:
-                    if port in HEAT_LANE_PORTS and port not in SHOWN_TIMES: 
+                    if LANE_TIMES[port] and port in HEAT_LANE_PORTS and port not in SHOWN_TIMES: 
                         d = LANE_TIMES[port] - START_TIME
-                        heat = Heat.query.filter_by(id=HEAT, category=CATEGORY.id, lane=LANES[port]).first()
-                        heat.time = float("%i.%i" % (d.seconds, d.microseconds)) 
+                        heat = Heat.query.filter_by(id=HEAT, category=CATEGORY, lane=LANES[port]).first()
+                        heat.time = float("%s.%s" % (d.seconds, d.microseconds)) 
                         db.session.add(heat)
                         db.session.commit()
+                        # heat.time rounds ten-hundred-thousands
                         print "\rLane %i: %f" % (LANES[port], heat.time)
-                        print "\rLane %i: %i.%i" % (LANES[port], d.seconds, d.microseconds)
+                        # Highest accuracy treat seconds and microseconds separatly
+                        #print "\rLane %i: %i.%i" % (LANES[port], d.seconds, d.microseconds)
                         SHOWN_TIMES.append(port)
 
-        elif CATEGORY == None:
-            while CATEGORY == None:
+        elif not CATEGORY:
+            while CATEGORY == 0:
                 os.system('clear')
                 for cat in Category.query.all():
                     print "%s: %s" % (cat.id, cat.name)
@@ -140,14 +151,13 @@ while 1:
                     HEAT = int(heat_id) 
         else:
             # update the status thread
-            r = requests.get('http://localhost:8888/status/%s/%s' % (CATEGORY.id, HEAT))
-            if r.status_code != 200:
-                print "STATUS UPDATE FAILED %s" % r.text
-            print "Category: %s" % CATEGORY.name
-            HEAT_CT = len(Heat.query.filter_by(category=cat_id).group_by('id').all())
+            os.system('clear')
+            status_update(CATEGORY, HEAT)
+            print "\nCategory: %s" % CATEGORY.name
+            HEAT_CT = len(Heat.query.filter_by(category=CATEGORY).group_by('id').all())
             print "Total Heats: %s" % HEAT_CT
             print ""
-            HEAT_LANES = Heat.query.filter_by(category=cat_id).filter_by(id=HEAT).order_by('lane').all()
+            HEAT_LANES = Heat.query.filter_by(category=CATEGORY).filter_by(id=HEAT).order_by('lane').all()
             HEAT_LANE_PORTS = map(lambda x: LANE_GPIO_PORTS[x.lane-1], HEAT_LANES)
             print "Heat %s: %s Lanes" % (str(HEAT), str(len(HEAT_LANES)))
             for l in HEAT_LANES:
