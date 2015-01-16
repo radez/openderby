@@ -7,7 +7,7 @@ import requests
 
 from time import sleep
 from datetime import datetime
-if sys.argv[1] == 'test':
+if len(sys.argv) > 1 and sys.argv[1] == 'test':
     import mock_GPIO as GPIO
 else:
     import RPi.GPIO as GPIO 
@@ -49,14 +49,17 @@ GPIO.setup(START, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 def ready_or_not(port):
     msg = 'READY'
-    if not GPIO.input(i):
+    if not GPIO.input(port):
         msg = 'NOT ' + msg
     return msg
 
 # verify setup
+print "Sensor Test"
+
 while 1:
+    print 'start  :: port %i :: %s' % (START, ready_or_not(START))
     for i in LANE_GPIO_PORTS:
-        print 'port %i %s' % (i, ready_or_not(i))
+        print 'lane %s :: port %i :: %s' % (LANES[i], i, ready_or_not(i))
     raw_input("Press Enter to continue")
     #os.system('clear')
     if reduce(lambda x,y: x and GPIO.input(y), LANE_GPIO_PORTS):

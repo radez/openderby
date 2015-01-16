@@ -24,14 +24,18 @@ Connected directly to the RPi (montior & keyboard or via ssh) and runs the race 
 displays results, cached with intent for anyone with an internet connected device to view.
 
 <h3>To get started / registration:</h3>
-- python reset_db.py
+- python db_reset.py
+- python db_seed_test_data.py
 - python run_server.py
 
 These steps will setup the database and get the web server running. Categories are created
 and Car Registrations can be taken though http://rpi.ip.addpress:8888. The port can be changed in runserver.py
 
+db_seed_test_data is optional. It will give you data to work with. To run your own race reset the database again and
+don't seed it with the test data.
+
 <h3>Generating heats:</h3>
-- python test_heat_gen_random.py
+- python heat_gen_random.py
 
 This will generate heats from the registrations that have been entered into the system and make sure that
 each car will race once on each lane of the track.

@@ -29,10 +29,19 @@ def results():
     results = Heat.query.filter(Heat.time != None).order_by(Heat.category_id, Heat.id, Heat.lane)
     return render_template("results.html", results=results)
 
+class CarModelView(ModelView):
+    list_display_pk=True
+    def __init__(self, model, session, name=None, category=None, endpoint=None, url=None, **kwargs):
+        for k, v in kwargs.iteritems():
+            setattr(self, k, v)
+
+        super(CarModelView, self).__init__(model, session, name=name, category=category, endpoint=endpoint, url=url)
+
+
 # Setup Registration admin
 adminReg = Admin(app, name="Registration", url='/registration')
 adminReg.add_view(ModelView(Category, db.session))
-adminReg.add_view(ModelView(Car, db.session))
+adminReg.add_view(CarModelView(Car, db.session))
 adminReg.add_view(HeatGenView(name="Heats"))
 
 class MyView(BaseView):
