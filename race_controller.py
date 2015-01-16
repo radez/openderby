@@ -58,7 +58,7 @@ while 1:
     for i in LANE_GPIO_PORTS:
         print 'port %i %s' % (i, ready_or_not(i))
     raw_input("Press Enter to continue")
-    os.system('clear')
+    #os.system('clear')
     if reduce(lambda x,y: x and GPIO.input(y), LANE_GPIO_PORTS):
         break 
 
@@ -86,11 +86,6 @@ HEAT = 0
 HEAT_LANES = 0
 HEAT_LANE_PORTS = []
 HEAT_CT = 0
-
-# starting socket server to serve state
-import json
-import socket
-import sys
 
 def status_update(category, heat):
     if category:
@@ -135,7 +130,7 @@ while 1:
 
         elif not CATEGORY:
             while CATEGORY == 0:
-                os.system('clear')
+                #os.system('clear')
                 for cat in Category.query.all():
                     print "%s: %s" % (cat.id, cat.name)
                 print "x: Exit"
@@ -151,7 +146,7 @@ while 1:
                     HEAT = int(heat_id) 
         else:
             # update the status thread
-            os.system('clear')
+            #os.system('clear')
             status_update(CATEGORY, HEAT)
             print "\nCategory: %s" % CATEGORY.name
             HEAT_CT = len(Heat.query.filter_by(category=CATEGORY).group_by('id').all())
