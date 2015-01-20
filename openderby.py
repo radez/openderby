@@ -30,7 +30,7 @@ def results():
     return render_template("results.html", results=results)
 
 class CarModelView(ModelView):
-    list_display_pk=True
+    column_display_pk=True
     def __init__(self, model, session, name=None, category=None, endpoint=None, url=None, **kwargs):
         for k, v in kwargs.iteritems():
             setattr(self, k, v)
