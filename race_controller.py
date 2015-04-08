@@ -9,6 +9,7 @@ from time import sleep
 from datetime import datetime
 if len(sys.argv) > 1 and sys.argv[1] == 'test':
     import mock_GPIO as GPIO
+    print "Using mock_GPIO module"
 else:
     import RPi.GPIO as GPIO 
 
@@ -57,6 +58,7 @@ def ready_or_not(port):
 print "Sensor Test"
 
 while 1:
+    os.system('clear')
     print 'start  :: port %i :: %s' % (START, ready_or_not(START))
     for i in LANE_GPIO_PORTS:
         print 'lane %s :: port %i :: %s' % (LANES[i], i, ready_or_not(i))
@@ -66,6 +68,7 @@ while 1:
         break 
 
 def finishline_callback(port):
+    #print port
     if START_TIME and not LANE_TIMES[port]:
         LANE_TIMES[port] = datetime.now()
         
@@ -73,12 +76,12 @@ def finishline_callback(port):
 ## when a rising edge is detected on a lane port the starter callback will be run
 #GPIO.add_event_detect(25, GPIO.RISING, callback=start_callback, bouncetime=300)
 # when a falling edge is detected on a lane port the finish callback will be run
-GPIO.add_event_detect(LANE1, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
-GPIO.add_event_detect(LANE2, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
-GPIO.add_event_detect(LANE3, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
-GPIO.add_event_detect(LANE4, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
-GPIO.add_event_detect(LANE5, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
-GPIO.add_event_detect(LANE6, GPIO.FALLING, callback=finishline_callback, bouncetime=300)
+GPIO.add_event_detect(LANE1, GPIO.FALLING, callback=finishline_callback, bouncetime=0)#300)
+GPIO.add_event_detect(LANE2, GPIO.FALLING, callback=finishline_callback, bouncetime=0)#300)
+GPIO.add_event_detect(LANE3, GPIO.FALLING, callback=finishline_callback, bouncetime=0)#300)
+GPIO.add_event_detect(LANE4, GPIO.FALLING, callback=finishline_callback, bouncetime=0)#300)
+GPIO.add_event_detect(LANE5, GPIO.FALLING, callback=finishline_callback, bouncetime=0)#300)
+GPIO.add_event_detect(LANE6, GPIO.FALLING, callback=finishline_callback, bouncetime=0)#300)
 
 START_TIME = 0
 LANE_TIMES = dict(zip(LANE_GPIO_PORTS, [0,0,0,0,0,0]))
@@ -160,10 +163,28 @@ while 1:
             print "Heat %s: %s Lanes" % (str(HEAT), str(len(HEAT_LANES)))
             for l in HEAT_LANES:
                 print "Lane %s: %s (%s)" % (l.lane, l.car.name, l.car.driver)
+
             print ""
-            sys.stdout.write("Waiting for start")
+            gate_settle = 5
+            while 1:
+                sys.stdout.write("\rWaiting for gate")
+                if not gate_settle:
+                    break
+                elif GPIO.input(START):
+                    gate_settle-=1
+                    sys.stdout.write(": %s" % str(gate_settle + 1))
+                else:
+                    if gate_settle != 5:
+                         sys.stdout.write("    ")
+                    gate_settle = 5
+                sys.stdout.flush()
+                sleep(1)
+
+            # clear the line first
+            sys.stdout.write("\r                   ")
+            sys.stdout.write("\rWaiting for start")
             sys.stdout.flush()
-            GPIO.wait_for_edge(START, GPIO.RISING)
+            GPIO.wait_for_edge(START, GPIO.FALLING)
             if not START_TIME:
                 START_TIME = datetime.now()
                 # need the spaces to overwrite
