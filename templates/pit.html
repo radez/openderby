@@ -8,7 +8,7 @@
     {% for heat in heats|groupby('id') %}
         </p><lh id="heat">Heat: {{ heat[0] }}</lh>
         {% for lane in heat.list %}
-            <li>Lane {{ lane.lane }}: {{ lane.car.name }} ({{ lane.car.driver }})</li>
+            <li><b>Lane {{ lane.lane }}: Car # {{ lane.car.id }} </b>({{ lane.car.name }} :: {{ lane.car.driver }})</li>
         {% endfor %}
     {% else %}
         <lh>No active heats</lh>

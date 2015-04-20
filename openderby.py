@@ -19,6 +19,8 @@ cache = Cache(app,config={'CACHE_TYPE': 'simple'})
 
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/openderby'
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SECRET_KEY'] = 'super secret key'
 db = SQLAlchemy(app)
 
 from registration import Category, Car, Heat, HeatGenView
