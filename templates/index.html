@@ -1,23 +1,27 @@
 {% extends 'admin/master.html' %}
 {% block body %}
-  <table>
+  <table border=1 cellpadding=5>
     <tr>
-      <td>
-  {% for group in heats|groupby('id') %}
-  Heat {{ group.grouper }}<br>
-  {% for heat in group.list %}
-  Lane {{ heat.lane }}: {{ heat.car }}<br>
-  {% endfor %}
-  {% else %}
-    <em>Unbelievable.  No entries here so far</em>
-  {% endfor %}
-      </td>
-      <td>
-  {% for car in cars %}
-  {{ car.0.name }}: {{ car.1 }} heats<br>
-  {% else %}
-    <em>Unbelievable.  No entries here so far</em>
-  {% endfor %}
+      <td valign="top">
+    {% for cats in heats|groupby('category_id') %}
+    <b>{{ (cats.list|first()).category }}</b><br>
+      {% for group in cats.list|groupby('id') %}
+      Heat {{ group.grouper }}<br>
+      {% for heat in group.list %}
+      Lane {{ heat.lane }}: {{ heat.car }}<br>
+      {% endfor %}
+      {% else %}
+        <em>Unbelievable.  No entries here so far</em>
+      {% endfor %}
+          </td>
+          <td valign="top">
+    {% endfor %}
+    <b>Heat count</b><br>
+      {% for car in cars %}
+      {{ car.0.name }}: {{ car.1 }} heats<br>
+      {% else %}
+        <em>Unbelievable.  No entries here so far</em>
+      {% endfor %}
       </td>
     </tr>
   </table>

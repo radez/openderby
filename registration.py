@@ -41,7 +41,7 @@ class Heat(db.Model):
 class HeatGenView(BaseView):
     @expose('/')
     def index(self):
-        heats = Heat.query.order_by('id', 'lane').all()
+        heats = Heat.query.order_by('category_id', 'id', 'lane').all()
         cars = db.session.query(Car, db.func.count(Car.id).label('heats'))\
                          .group_by(Car.id).join(Heat).all()
         return self.render('index.html', heats=heats, cars=cars)
