@@ -26,10 +26,14 @@ db = SQLAlchemy(app)
 from registration import Category, Car, Heat, HeatGenView
 
 @app.route("/")
+@app.route("/results")
+@app.route("/results/<cat>")
 @cache.cached(timeout=5)
-def results():
+def results(cat = None):
     results = Heat.query.filter(Heat.time != None).order_by(Heat.category_id, Heat.id, Heat.lane)
-    return render_template("results.html", results=results)
+    if cat:
+        results = results.filter(Heat.category_id==cat)
+    return render_template("results.html", results=results, selected=cat)
 
 class CarModelView(ModelView):
     column_display_pk=True

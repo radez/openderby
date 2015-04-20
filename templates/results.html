@@ -1,17 +1,31 @@
 <html lang="en">
 <head>
     <title>OpenDerby Results</title>
+    <style>
+        lh {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+    {% if selected %}
+        <a href="/results">Back to category list</a></li>
+        </p>
+    {% endif %}
     <ul id="results">
+    {% if not selected %}<lh>Categories</lh>{% endif %}
     {% for category in results|groupby('category') %}
-        <lh id="category">{{ (category.list|first()).category }}</lh>
-        {% for heat in category.list|groupby('id') %}
-            </p><lh id="heat">Heat: {{ heat[0] }}</lh>
-            {% for lane in heat.list %}
-                <li>Lane {{ lane.lane }}: {{ lane.time }} {{ lane.car.name }} ({{ lane.car.driver }})</li>
+        {% if selected %}
+            <lh id="category" style="font-weight:bold">{{ (category.list|first()).category }}</lh>
+            {% for heat in category.list|groupby('id') %}
+                </p><lh id="heat">Heat: {{ heat[0] }}</lh>
+                {% for lane in heat.list %}
+                <li>Lane {{ lane.lane }}: {{ '{0:0.2f}'.format(lane.time) }} Car #{{ lane.car.id }} {{ lane.car.name }} ({{ lane.car.driver }})</li>
+                {% endfor %}
             {% endfor %}
-        {% endfor %}
+        {% else %}
+            <li><a href="/results/{{ (category.list|first()).category.id }}">{{ (category.list|first()).category }}</a></li>
+        {% endif %}
     {% else %}
         <lh>No Results available</lh>
     {% endfor %}

@@ -53,18 +53,20 @@ def ready_or_not(port):
         msg = 'NOT ' + msg
     return msg
 
-# verify setup
-print "Sensor Test"
-
-while 1:
-    os.system('clear')
-    print 'start  :: port %i :: %s' % (START, ready_or_not(START))
-    for i in LANE_GPIO_PORTS:
-        print 'lane %s :: port %i :: %s' % (LANES[i], i, ready_or_not(i))
-    raw_input("Press Enter to continue")
-    #os.system('clear')
-    if reduce(lambda x,y: x and GPIO.input(y), LANE_GPIO_PORTS + [START]):
-        break 
+def sensor_test(w_start = True):
+    while 1:
+        if w_start:
+            ports = LANE_GPIO_PORTS + [START]
+        else:
+            ports = LANE_GPIO_PORTS
+        if reduce(lambda x,y: x and GPIO.input(y), ports):
+            break
+        os.system('clear')
+        if w_start:
+            print 'start  :: port %i :: %s' % (START, ready_or_not(START))
+        for i in LANE_GPIO_PORTS:
+            print 'lane %s :: port %i :: %s' % (LANES[i], i, ready_or_not(i))
+        raw_input("Press Enter to continue")
 
 def finishline_callback(port):
     #print port
@@ -99,6 +101,9 @@ def status_update(category, heat):
     if r.status_code != 200:
         print "STATUS UPDATE FAILED %s" % r.text
 
+
+print "Sensor Test"
+sensor_test()
 
 while 1:
     try:
@@ -153,6 +158,10 @@ while 1:
             # update the status thread
             #os.system('clear')
             status_update(CATEGORY, HEAT)
+            # check that we can still see all the sensors
+            # ignore start gate, that will be checked separate here
+            sensor_test(False)
+            # print the category and heat
             print "\nCategory: %s" % CATEGORY.name
             HEAT_CT = len(Heat.query.filter_by(category=CATEGORY).group_by('id').all())
             print "Total Heats: %s" % HEAT_CT
