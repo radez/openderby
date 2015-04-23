@@ -2,7 +2,7 @@
 <head>
     <title>OpenDerby Results</title>
     <style>
-        lh {
+        h2 h3 {
             font-weight: bold;
         }
     </style>
@@ -10,17 +10,28 @@
 <body>
     {% if selected %}
         <a href="/results">Back to category list</a></li>
+        <h3>Heat line ups are subject to change until race starts</h3>
         </p>
     {% endif %}
-    <ul id="results">
-    {% if not selected %}<lh>Categories</lh>{% endif %}
+    <table border=1 cellspacing=0 cellpadding=10>
+    {% if not selected %}<h2>Categories</h2>{% endif %}
     {% for category in results|groupby('category') %}
         {% if selected %}
-            <lh id="category" style="font-weight:bold">{{ (category.list|first()).category }}</lh>
+            <h2 id="category">{{ (category.list|first()).category }}</h2>
             {% for heat in category.list|groupby('id') %}
-                </p><lh id="heat">Heat: {{ heat[0] }}</lh>
+            <tr>
+                <td colspan=4><h3>Heat: {{ heat[0] }}</h3></td>
+            </tr>
+            <tr id="header">
+                <td>Lane</td><td>Car</td><td>Driver</td><td>Time</td>
+            </tr>
                 {% for lane in heat.list %}
-                <li>Lane {{ lane.lane }}: {{ '{0:0.2f}'.format(lane.time) }} Car #{{ lane.car.id }} {{ lane.car.name }} ({{ lane.car.driver }})</li>
+                <tr id="lane">
+                    <td>{{ lane.lane }}</td>
+                    <td>#{{ lane.car.id }} {{ lane.car.name }}</td>
+                    <td>{{ lane.car.driver }}</td>
+                    <td>{% if lane.time %}{{ '{0:0.2f}'.format(lane.time) }}{% else %}&nbsp;{% endif %}</td>
+                </tr>
                 {% endfor %}
             {% endfor %}
         {% else %}
@@ -29,6 +40,6 @@
     {% else %}
         <lh>No Results available</lh>
     {% endfor %}
-    </ul>
+    <table>
 </body>
 </html>

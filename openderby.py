@@ -30,7 +30,7 @@ from registration import Category, Car, Heat, HeatGenView
 @app.route("/results/<cat>")
 @cache.cached(timeout=5)
 def results(cat = None):
-    results = Heat.query.filter(Heat.time != None).order_by(Heat.category_id, Heat.id, Heat.lane)
+    results = Heat.query.order_by(Heat.category_id, Heat.id, Heat.lane)
     if cat:
         results = results.filter(Heat.category_id==cat)
     return render_template("results.html", results=results, selected=cat)
