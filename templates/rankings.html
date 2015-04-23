@@ -1,0 +1,42 @@
+<html lang="en">
+<head>
+    <title>OpenDerby Awards Results</title>
+    <style>
+        h2 h3 {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    {% if selected %}
+        <a href="/results">Back to category list</a></li>
+        <h3>Heat line ups are subject to change until race starts</h3>
+        </p>
+    {% endif %}
+    <table border=1 cellspacing=0 cellpadding=10>
+    {% for category in results|groupby('category') %}
+    <tr><td colspan=6> <h2 id="category">{{ (category.list|first()).cat_name }}</h2></td></tr>
+            <tr id="header">
+                <td>Place</td>
+                <td>Car</td>
+                <td>Driver</td>
+                <td>Time</td>
+                <td>Heat</td>
+                <td>Lane</td>
+            </tr>
+                {% for car in category.list|sort(attribute='time')%}
+                <tr id="lane">
+                    <td>{{ loop.index }}</td>
+                    <td>#{{ car.car_id }} {{ car.name }}</td>
+                    <td>{{ car.driver }}</td>
+                    <td>{% if car.time %}{{ '{0:0.2f}'.format(car.time) }}{% else %}&nbsp;{% endif %}</td>
+                    <td>{{ car.heat_id }}</td>
+                    <td>{{ car.lane }}</td>
+                </tr>
+                {% endfor %}
+    {% else %}
+        <lh>No Rankings available</lh>
+    {% endfor %}
+    <table>
+</body>
+</html>
