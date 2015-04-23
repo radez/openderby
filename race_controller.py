@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # Adapted from script by Alex Eames http://RasPi.tv  
 # http://RasPi.tv/how-to-use-interrupts-with-python-on-the-raspberry-pi-and-rpi-gpio-part-3  
+# Captured key press events with
+# http://stackoverflow.com/questions/13207678/whats-the-simplest-way-of-detecting-keyboard-input-in-python-from-the-terminal
 import sys
 import os
 import requests
