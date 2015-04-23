@@ -107,11 +107,42 @@ def status_update(category, heat):
 print "Sensor Test"
 sensor_test()
 
+
+import termios, fcntl, sys, os
+
 while 1:
     try:
         #if len(SHOWN_TIMES) >= 6:
         #    break
         if START_TIME:
+            #### start setup for capture keypresses
+            fd = sys.stdin.fileno()
+
+            oldterm = termios.tcgetattr(fd)
+            newattr = termios.tcgetattr(fd)
+            newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
+            termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+            oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
+            fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+            #### finish setup for capture keypresses
+
+            try:
+                # capture keypresses
+                c = sys.stdin.read(1)
+                #if c in "!@#$%^":
+
+                #    if not LANE_TIMES[port]:
+                #        LANE_TIMES[port] = 0
+                #else:
+                try:
+                    lane = int(c)
+                    if lane in range(1,7):
+                        finishline_callback(LANE_GPIO_PORTS[int(c)-1])
+                        sys.stdout.write('\rManual Trigger %s\n' % repr(c))
+                except: pass
+            except IOError: pass
+
             if len(SHOWN_TIMES) >= len(HEAT_LANES):
                 # All lanes have gotten a time
                 # Reset for next heat
@@ -139,6 +170,10 @@ while 1:
                         # Highest accuracy treat seconds and microseconds separatly
                         #print "\rLane %i: %i.%i" % (LANES[port], d.seconds, d.microseconds)
                         SHOWN_TIMES.append(port)
+
+            #### cleanup capture keypresses
+            termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
+            fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
 
         elif not CATEGORY:
             while CATEGORY == 0:
@@ -200,7 +235,7 @@ while 1:
                 # need the spaces to overwrite
                 # waiting for start
                 print "\rGo!              "
-        sleep(1)
+        sleep(.5)
   
     
     except KeyboardInterrupt:
