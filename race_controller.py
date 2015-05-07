@@ -194,13 +194,20 @@ while 1:
             sys.stdout.write("\r                   ")
             sys.stdout.write("\rWaiting for start")
             sys.stdout.flush()
-            GPIO.wait_for_edge(START, GPIO.FALLING)
+            go = 0
+            while go < 3:
+                GPIO.wait_for_edge(START, GPIO.FALLING)
+                # software debounce
+                go = 0
+                for i in [1,2,3]:
+                    sleep(.01)
+                    go += int(GPIO.input(START))
             if not START_TIME:
                 START_TIME = datetime.now()
                 # need the spaces to overwrite
                 # waiting for start
                 print "\rGo!              "
-        sleep(1)
+        sleep(.5)
   
     
     except KeyboardInterrupt:
