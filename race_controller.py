@@ -18,8 +18,7 @@ else:
 GPIO.setmode(GPIO.BCM)
 
 # Import OpenDerby database
-from openderby import db
-from registration import Category, Car, Heat
+from openderby.models import db, Category, Car, Heat
 
 # GPIO port assignments
 START = 25
@@ -99,10 +98,17 @@ HEAT_CT = 0
 def status_update(category, heat):
     if category:
          category = category.id
-    r = requests.get('http://localhost:8888/status/%s/%s' % (category, heat))
+    r = requests.get('http://localhost:9000/status/%s/%s' % (category, heat))
     if r.status_code != 200:
         print "STATUS UPDATE FAILED %s" % r.text
 
+def finish_update(lane, time):
+    try:
+        r = requests.get('http://localhost:9000/finish/%s/%s/' % (lane, time))
+        if r.status_code != 200:
+            print "FINISH UPDATE FAILED %s" % r.text
+    except:
+        pass
 
 print "Sensor Test"
 sensor_test()
@@ -139,6 +145,7 @@ while 1:
                         # Highest accuracy treat seconds and microseconds separatly
                         #print "\rLane %i: %i.%i" % (LANES[port], d.seconds, d.microseconds)
                         SHOWN_TIMES.append(port)
+                        finish_update(LANES[port], heat.time)
 
         elif not CATEGORY:
             while CATEGORY == 0:

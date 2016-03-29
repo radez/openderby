@@ -1,7 +1,6 @@
 from math import ceil
 from random import randrange
-from openderby import db
-from registration import Category, Car, Heat
+from openderby import db, Category, Car, Heat
 
 lanes = 6
 warning = '  *** HEAT LANE MISMATCH ***'
