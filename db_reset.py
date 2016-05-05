@@ -1,8 +1,8 @@
-from openderby.models import db, Category, Car
+from openderby.models import app, Category, Car
 print "Destroying database"
-db.drop_all()
+app.db.drop_all()
 print "Recreating database"
-db.create_all()
+app.db.create_all()
 
-db.session.commit()
+app.db.session.commit()
 print "Complete"

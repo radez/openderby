@@ -5,19 +5,54 @@
 # http://stackoverflow.com/questions/13207678/whats-the-simplest-way-of-detecting-keyboard-input-in-python-from-the-terminal
 import sys
 import os
+sys.stdout.write('Importing requests library')
+sys.stdout.flush()
 import requests
+import smbus
+import threading
+
+server = "192.168.0.84"
+port = "9000"
+
+# for RPI version 1, use "bus = smbus.SMBus(0)"
+bus = smbus.SMBus(1)
+
+# This is the address we setup in the Arduino Program
+address = 0x04
+
+class UpdateScoreboard(threading.Thread):
+    def run(self):
+        r = requests.get('http://%s:%s/scoreboard_update' % (server, port))
+        if r.status_code != 200:
+            print "SCOREBOARD UPDATE FAILED %s" % r.text
+
+def pitWrite(value):
+    value = list(value)
+    value.reverse()
+    while len(value):
+        bus.write_byte(address, ord(value.pop()))
+    # bus.write_byte_data(address, 0, value)
 
 from time import sleep
 from datetime import datetime
 if len(sys.argv) > 1 and sys.argv[1] == 'test':
-    import mock_GPIO as GPIO
-    print "Using mock_GPIO module"
+    import race_controller_mock_GPIO as GPIO
+    print "\nUsing mock_GPIO module"
+    pitWrite = lambda x: True
+    print "Overloading pitWrite"
 else:
     import RPi.GPIO as GPIO 
 
 GPIO.setmode(GPIO.BCM)
 
+sys.stdout.write('\r                          ')
+sys.stdout.write('\rTesting Pit connectivity')
+sys.stdout.flush()
+pitWrite(' ')
 # Import OpenDerby database
+sys.stdout.write('\r                          ')
+sys.stdout.write('\rConnecting to database')
+sys.stdout.flush()
 from openderby.models import db, Category, Car, Heat
 
 # GPIO port assignments
@@ -95,23 +130,36 @@ HEAT_LANES = 0
 HEAT_LANE_PORTS = []
 HEAT_CT = 0
 
+def pit_update(category, heat):
+    pitWrite(' ')
+    lanes = Heat.query.filter_by(id=heat, category_id=category).order_by("lane").all()
+    lane_update = 1
+    for heat in lanes:
+        while lane_update != heat.lane:
+            pitWrite(':::')
+            lane_update+=1
+        pitWrite('{::>3}'.format(heat.car.id))
+        lane_update+=1
+
 def status_update(category, heat):
     if category:
-         category = category.id
-    r = requests.get('http://localhost:9000/status/%s/%s' % (category, heat))
+        category = category.id
+    r = requests.get('http://%s:%s/status/%s/%s' % (server, port,category, heat))
     if r.status_code != 200:
         print "STATUS UPDATE FAILED %s" % r.text
 
 def finish_update(lane, time):
     try:
-        r = requests.get('http://localhost:9000/finish/%s/%s/' % (lane, time))
+        r = requests.get('http://%s:%s/finish/%s/%s/' % (server, port, lane, time))
         if r.status_code != 200:
             print "FINISH UPDATE FAILED %s" % r.text
     except:
         pass
-
-print "Sensor Test"
+pitWrite
+sys.stdout.write('\r                          ')
+sys.stdout.write('\rSensor Test')
 sensor_test()
+sys.stdout.write('\r                          \r')
 
 while 1:
     try:
@@ -150,6 +198,7 @@ while 1:
         elif not CATEGORY:
             while CATEGORY == 0:
                 #os.system('clear')
+                print "Getting category list"
                 for cat in Category.query.all():
                     print "%s: %s" % (cat.id, cat.name)
                 print "x: Exit"
@@ -163,6 +212,9 @@ while 1:
                     HEAT = HEAT+1
                 else:
                     HEAT = int(heat_id) 
+                status_update(CATEGORY, HEAT)
+                pit_update(CATEGORY.id, HEAT)
+                UpdateScoreboard().start()
         else:
             # update the status thread
             #os.system('clear')
@@ -203,17 +255,19 @@ while 1:
             sys.stdout.flush()
             go = 0
             while go < 3:
-                GPIO.wait_for_edge(START, GPIO.FALLING)
+                #GPIO.wait_for_edge(START, GPIO.FALLING)
                 # software debounce
                 go = 0
                 for i in [1,2,3]:
                     sleep(.01)
-                    go += int(GPIO.input(START))
+                    go += int(not GPIO.input(START))
             if not START_TIME:
                 START_TIME = datetime.now()
                 # need the spaces to overwrite
                 # waiting for start
                 print "\rGo!              "
+                pit_update(CATEGORY.id, HEAT+1)
+                UpdateScoreboard().start()
         sleep(.5)
   
     

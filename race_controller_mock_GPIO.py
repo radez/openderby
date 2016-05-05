@@ -1,3 +1,4 @@
+START = 25
 
 LANE1 = 18
 LANE2 = 17
@@ -41,7 +42,11 @@ def setup(*args, **kwargs):
     pass
 
 def input(*args, **kwargs):
-    return True
+    if args[0] == START:
+        second = int(time.time() % 10)
+        return second not in [3,7]
+    else:
+        return True
 
 def add_event_detect(*args, **kwargs):
     x = Monitor(args[0], kwargs['callback'])

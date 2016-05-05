@@ -1,11 +1,8 @@
-from registration import app
-
-from flask.ext.sqlalchemy import SQLAlchemy
-db = SQLAlchemy(app)
-
 from flask.ext.admin import Admin, BaseView, expose
 from flask.ext.admin.contrib.sqla import ModelView
+from registration import app
 
+db = app.db
 
 class Category(db.Model):
     __tablename__ = 'category'

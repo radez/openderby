@@ -17,8 +17,7 @@
       }
 
       window.onbeforeunload = function(e) {
-        $('#chat').val($('#chat').val() + 'Bye bye...\n');
-        ws.close(1000, '{{ username }} left the room');
+        ws.close(1000, '');
 
         if(!e) e = window.event;
         e.stopPropagation();
@@ -27,19 +26,18 @@
       ws.onmessage = function (evt) {
          try{
            var msg = JSON.parse(evt.data);
+           if ($('#heat').text == '0') {
+                 window.location.reload(1); }
            $('#' + msg.element).text(msg.val);
          } finally {
-           $('#chat').val($('#chat').val() + 'test: ' + evt.data + '\n');
+           console.log('test: ' + evt.data + '\n');
          }
       };
-      ws.onopen = function() {
-         ws.send("{{ username }} entered the room");
-      };
       ws.onclose = function(evt) {
-         $('#chat').val('Connection closed by server: ' + evt.code + ' \"' + evt.reason + '\"\n');
+         console.log('Connection closed by server: ' + evt.code + ' \"' + evt.reason + '\"\n');
          ws = null;
          while(! ws) {
-             $('#chat').val($('#chat').val() + 'Reconnecting...');
+             $('#category').text('Reconnecting...');
              if (window.WebSocket) {
                  ws = new WebSocket(websocket);
              }
@@ -50,16 +48,11 @@
                 console.log('WebSocket Not Supported');
                 return;
              }
-             sleep(5);
          }
+         setTimeout(function () {
+                 window.location.reload(1);
+         }, 5000);  // After 5 secs
       };
-
-      $('#send').click(function() {
-         console.log($('#message').val());
-         ws.send('{{ username }}: ' + $('#message').val());
-         $('#message').val("");
-         return false;
-      });
     });
   </script>
   <style>
@@ -76,46 +69,40 @@ body {padding:2em;}
 </head>
 <body>
 <div id="header">
-    <div class="left"><div id='category' class="right">No Race Loaded</div></div>
-    <div class="right"><div class="left">Heat: </div><div id='heat' class="right">0</div></div>
+    <div class="left"><div id='category' class="right">{{ category }}</div></div>
+    <div class="right"><div class="left">Heat: </div><div id='heat' class="right">{{ heat }}</div></div>
 </div>
 <div id="lanes">
         <div class="left">1:</div>
-        <div id='lane1name' class="left">&nbsp;</div>
-        <div id='lane1time' class="right">&nbsp;</div>
+        <div id='lane1name' class="left">{{ lanes[1].name }}</div>
+        <div id='lane1time' class="right">{{ lanes[1].time}}</div>
 </div>
 <div id="lanes">
         <div class="left">2:</div>
-        <div id='lane2name' class="left">&nbsp;</div>
-        <div id='lane2time' class="right">&nbsp;</div>
+        <div id='lane2name' class="left">{{ lanes[2].name }}</div>
+        <div id='lane2time' class="right">{{ lanes[2].time}}</div>
 </div>
 <div id="lanes">
         <div class="left">3:</div>
-        <div id='lane3name' class="left">&nbsp;</div>
-        <div id='lane3time' class="right">&nbsp;</div>
+        <div id='lane3name' class="left">{{ lanes[3].name }}</div>
+        <div id='lane3time' class="right">{{ lanes[3].time}}</div>
 </div>
 <div id="lanes">
         <div class="left">4:</div>
-        <div id='lane4name' class="left">&nbsp;</div>
-        <div id='lane4time' class="right">&nbsp;</div>
+        <div id='lane4name' class="left">{{ lanes[4].name }}</div>
+        <div id='lane4time' class="right">{{ lanes[4].time}}</div>
 </div>
 <div id="lanes">
         <div class="left">5:</div>
-        <div id='lane5name' class="left">&nbsp;</div>
-        <div id='lane5time' class="right">&nbsp;</div>
+        <div id='lane5name' class="left">{{ lanes[5].name }}</div>
+        <div id='lane5time' class="right">{{ lanes[5].time}}</div>
 </div>
 <div id="lanes">
         <div class="left">6:</div>
-        <div id='lane6name' class="left">&nbsp;</div>
-        <div id='lane6time' class="right">&nbsp;</div>
+        <div id='lane6name' class="left">{{ lanes[6].name }}</div>
+        <div id='lane6time' class="right">{{ lanes[6].time}}</div>
 </div>
 
 <div style="clear:both;" />
-<form action='#' id='chatform' method='get'>
-  <textarea id='chat' cols='35' rows='10'></textarea>
-  <br />
-  <label for='message'>{{ username }}: </label><input type='text' id='message' />
-  <input id='send' type='submit' value='Send' />
-  </form>
 </body>
 </html>
