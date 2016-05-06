@@ -45,7 +45,8 @@ class Derby(object):
             cat_name = Category.query.get(cat)
             for lane in Heat.query.filter_by(category_id=cat,id=heat).all():
                 lanes[lane.lane]["name"] = lane.car.name
-                lanes[lane.lane]["time"] = lane.time
+                if lane.time:
+                    lanes[lane.lane]["time"] = lane.time
         else:
             cat_name = "No Race in Progress"
         tmpl = env.get_template('scoreboard.html')

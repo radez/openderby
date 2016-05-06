@@ -1,6 +1,7 @@
 from math import ceil
 from random import randrange
-from openderby import db, Category, Car, Heat
+from openderby import Category, Car, Heat
+from openderby.registration import app
 
 lanes = 6
 warning = '  *** HEAT LANE MISMATCH ***'
@@ -19,17 +20,17 @@ for category in Category.query.all():
             if lane in used_lanes:
                 break
             cars_q = Car.query.filter_by(category=category)\
-                              .outerjoin(Heat, db.and_(Heat.car_id==Car.id, db.or_(Heat.id == heat_id, Heat.lane == lane))).filter(Heat.id.is_(None)).filter(Heat.lane.is_(None))
+                              .outerjoin(Heat, app.db.and_(Heat.car_id==Car.id, app.db.or_(Heat.id == heat_id, Heat.lane == lane))).filter(Heat.id.is_(None)).filter(Heat.lane.is_(None))
             #print str(cars_q)
             cars = cars_q.all()
             car_cnt = len(cars)
             if car_cnt:
                 car_index = randrange(0, car_cnt)
                 heat = Heat(id=heat_id, category=category, lane=lane, car=cars[car_index])
-                db.session.add(heat) 
-                db.session.commit()
+                app.db.session.add(heat)
+                app.db.session.commit()
     print "\nVerifying Cars"
-    cars = db.session.query(Car, db.func.count(Car.id).label('heats'))\
+    cars = app.db.session.query(Car, app.db.func.count(Car.id).label('heats'))\
                          .filter_by(category=category).group_by(Car.id).join(Heat).all()
     for car in cars:
         warn = ''

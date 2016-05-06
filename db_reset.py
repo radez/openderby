@@ -1,4 +1,4 @@
-from openderby.models import app, Category, Car
+from openderby.registration import app
 print "Destroying database"
 app.db.drop_all()
 print "Recreating database"

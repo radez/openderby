@@ -1,5 +1,6 @@
 from random import randint
-from openderby.models import app, Category, Car
+from openderby.models import Category, Car
+from openderby.registration import app
 
 print "Seeding database"
 

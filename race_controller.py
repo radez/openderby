@@ -11,8 +11,10 @@ import requests
 import smbus
 import threading
 
-server = "192.168.0.84"
-port = "9000"
+from openderby.models import app, Category, Car, Heat
+
+http_server = '192.168.0.84'
+http_port = '9000'
 
 # for RPI version 1, use "bus = smbus.SMBus(0)"
 bus = smbus.SMBus(1)
@@ -22,7 +24,7 @@ address = 0x04
 
 class UpdateScoreboard(threading.Thread):
     def run(self):
-        r = requests.get('http://%s:%s/scoreboard_update' % (server, port))
+        r = requests.get('http://%s:%s/scoreboard_update' % (http_server, http_port))
         if r.status_code != 200:
             print "SCOREBOARD UPDATE FAILED %s" % r.text
 
@@ -53,7 +55,6 @@ pitWrite(' ')
 sys.stdout.write('\r                          ')
 sys.stdout.write('\rConnecting to database')
 sys.stdout.flush()
-from openderby.models import db, Category, Car, Heat
 
 # GPIO port assignments
 START = 25
@@ -144,13 +145,13 @@ def pit_update(category, heat):
 def status_update(category, heat):
     if category:
         category = category.id
-    r = requests.get('http://%s:%s/status/%s/%s' % (server, port,category, heat))
+    r = requests.get('http://%s:%s/status/%s/%s' % (http_server, http_port, category, heat))
     if r.status_code != 200:
         print "STATUS UPDATE FAILED %s" % r.text
 
 def finish_update(lane, time):
     try:
-        r = requests.get('http://%s:%s/finish/%s/%s/' % (server, port, lane, time))
+        r = requests.get('http://%s:%s/finish/%s/%s/' % (http_server, http_port, lane, time))
         if r.status_code != 200:
             print "FINISH UPDATE FAILED %s" % r.text
     except:
@@ -186,8 +187,8 @@ while 1:
                         d = LANE_TIMES[port] - START_TIME
                         heat = Heat.query.filter_by(id=HEAT, category=CATEGORY, lane=LANES[port]).first()
                         heat.time = float("%s.%s" % (d.seconds, d.microseconds)) 
-                        db.session.add(heat)
-                        db.session.commit()
+                        print app.db.session.add(heat)
+                        print app.db.session.commit()
                         # heat.time rounds ten-hundred-thousands
                         print "\rLane %i: %f" % (LANES[port], heat.time)
                         # Highest accuracy treat seconds and microseconds separatly
