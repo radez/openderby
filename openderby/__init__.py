@@ -21,7 +21,7 @@ from jinja2 import Environment, FileSystemLoader
 env = Environment(loader=FileSystemLoader('templates'))
 
 from models import Category, Heat, Car
-from models import app
+from registration import app
 
 rankings_key = 'rankings_key'
 
@@ -37,7 +37,15 @@ class Derby(object):
         self.scheme = 'wss' if ssl else 'ws'
 
     @cherrypy.expose
-    def index(self):
+    def index(self, cat=None):
+        results = Heat.query.order_by(Heat.category_id, Heat.id, Heat.lane)
+        if cat:
+            results = results.filter(Heat.category_id==cat)
+        tmpl = env.get_template('results.html')
+        return tmpl.render(results=results, selected=cat)
+
+    @cherrypy.expose
+    def scoreboard(self):
         cat = Derby.current_category
         heat = Derby.current_heat
         lanes = [{"name": "", "time": ""} for x in range(7)]
@@ -46,7 +54,7 @@ class Derby(object):
             for lane in Heat.query.filter_by(category_id=cat,id=heat).all():
                 lanes[lane.lane]["name"] = lane.car.name
                 if lane.time:
-                    lanes[lane.lane]["time"] = lane.time
+                    lanes[lane.lane]["time"] = "{0:.2f}".format(lane.time)
         else:
             cat_name = "No Race in Progress"
         tmpl = env.get_template('scoreboard.html')
@@ -107,7 +115,7 @@ class Derby(object):
 
     @cherrypy.expose
     def finish(self, lane, time):
-        json = '{ "element": "lane%stime", "val": "%s" }'  % (lane, time)
+        json = '{ "element": "lane%stime", "val": "%s" }'  % (lane, "{0:.2f}".format(float(time)))
         cherrypy.engine.publish('websocket-broadcast', json)
 
     @cherrypy.expose
@@ -125,14 +133,6 @@ class Derby(object):
         tmpl = env.get_template('pit.html')
         return tmpl.render(category=Derby.current_category,
                            heat=Derby.current_heat, heats=heats)
-
-    @cherrypy.expose
-    def results(self, cat=None):
-        results = Heat.query.order_by(Heat.category_id, Heat.id, Heat.lane)
-        if cat:
-            results = results.filter(Heat.category_id==cat)
-        tmpl = env.get_template('results.html')
-        return tmpl.render(results=results, selected=cat)
 
     @cherrypy.expose
     def rankings(self, key=None):

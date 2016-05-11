@@ -32,7 +32,11 @@ def pitWrite(value):
     value = list(value)
     value.reverse()
     while len(value):
-        bus.write_byte(address, ord(value.pop()))
+        x = ord(value.pop())
+        try:
+            bus.write_byte(address, x)
+        except:
+            print "Failed to write %s to the pit" % x
     # bus.write_byte_data(address, 0, value)
 
 from time import sleep
@@ -158,7 +162,7 @@ def finish_update(lane, time):
         pass
 pitWrite
 sys.stdout.write('\r                          ')
-sys.stdout.write('\rSensor Test')
+sys.stdout.write('\rSensor Test\n')
 sensor_test()
 sys.stdout.write('\r                          \r')
 
@@ -187,8 +191,8 @@ while 1:
                         d = LANE_TIMES[port] - START_TIME
                         heat = Heat.query.filter_by(id=HEAT, category=CATEGORY, lane=LANES[port]).first()
                         heat.time = float("%s.%s" % (d.seconds, d.microseconds)) 
-                        print app.db.session.add(heat)
-                        print app.db.session.commit()
+                        app.db.session.add(heat)
+                        app.db.session.commit()
                         # heat.time rounds ten-hundred-thousands
                         print "\rLane %i: %f" % (LANES[port], heat.time)
                         # Highest accuracy treat seconds and microseconds separatly
