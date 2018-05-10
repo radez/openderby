@@ -1,3 +1,4 @@
+#!/bin/python
 from math import ceil
 from random import randrange
 from openderby import Category, Car, Heat

@@ -8,16 +8,19 @@ import os
 sys.stdout.write('Importing requests library')
 sys.stdout.flush()
 import requests
-import smbus
 import threading
 
 from openderby.models import app, Category, Car, Heat
 
-http_server = '192.168.0.84'
+http_server = '192.168.0.254'
 http_port = '9000'
 
 # for RPI version 1, use "bus = smbus.SMBus(0)"
-bus = smbus.SMBus(1)
+try:
+    import smbus
+    bus = smbus.SMBus(1)
+except:
+    bus = None
 
 # This is the address we setup in the Arduino Program
 address = 0x04

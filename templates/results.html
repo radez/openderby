@@ -20,7 +20,7 @@
             <h2 id="category">{{ (category.list|first()).category }}</h2>
             {% for heat in category.list|groupby('id') %}
             <tr>
-                <td colspan=4><h3>Heat: {{ heat[0] }}</h3></td>
+                <td colspan=4><h3 id="heat{{ heat[0] }}">Heat: {{ heat[0] }}</h3></td>
             </tr>
             <tr id="header">
                 <td>Lane</td><td>Car</td><td>Driver</td><td>Time</td>
@@ -41,5 +41,16 @@
         <lh>No Results available</lh>
     {% endfor %}
     <table>
+    {% if refresh %}
+    <script type="text/javascript">
+      document.addEventListener('DOMContentLoaded', function() {
+          var el = document.getElementById("heat{{ anchor }}");
+          el.scrollIntoView( false );
+      }, false);
+      setTimeout(function(){
+         window.location.reload(1);
+      }, 5000);
+    </script>
+    {% endif %}
 </body>
 </html>

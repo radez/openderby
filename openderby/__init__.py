@@ -38,11 +38,20 @@ class Derby(object):
 
     @cherrypy.expose
     def index(self, cat=None):
+        return self.results()
+
+    @cherrypy.expose
+    def results(self, cat=None, refresh=None):
         results = Heat.query.order_by(Heat.category_id, Heat.id, Heat.lane)
+        if refresh:
+            cat=Derby.current_category
+            anchor=Derby.current_heat
+        else:
+            anchor=0
         if cat:
             results = results.filter(Heat.category_id==cat)
         tmpl = env.get_template('results.html')
-        return tmpl.render(results=results, selected=cat)
+        return tmpl.render(results=results, selected=cat, anchor=anchor, refresh=refresh)
 
     @cherrypy.expose
     def scoreboard(self):
@@ -125,6 +134,7 @@ class Derby(object):
 
     @cherrypy.expose
     def pit(self):
+        app.db.session.expire_all()
         heats = Heat.query.filter_by(
                            category_id=Derby.current_category
                          ).filter(
@@ -138,6 +148,7 @@ class Derby(object):
     def rankings(self, key=None):
         results = []
         if key == rankings_key:
+            app.db.session.expire_all()
             bests = app.db.session.query(Heat.car_id.label('car_id'), app.db.func.min(Heat.time).label('best_time')).group_by(Heat.car_id).subquery()
             results = app.db.session.query(Heat.id.label('heat_id'), Heat.category_id.label('category'), Category.name.label('cat_name'),\
                                        Heat.car_id.label('car_id'), Heat.lane, Heat.time, Car.name, Car.driver, bests.c.best_time)\
@@ -145,7 +156,7 @@ class Derby(object):
                                          .outerjoin(bests, Heat.car_id==bests.c.car_id).order_by('category').order_by('best_time')\
                                          .join(Category, Heat.category_id==Category.id).join(Car, Heat.car_id==Car.id)
 
-            results = results.all()
 
+            results = results.all()
         tmpl = env.get_template('rankings.html')
         return tmpl.render(results=results)
