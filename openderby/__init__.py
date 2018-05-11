@@ -40,6 +40,14 @@ class Derby(object):
     def index(self, cat=None):
         return self.results()
 
+
+    @cherrypy.expose
+    def participants(self):
+        app.db.session.expire_all()
+        cars = Car.query.order_by(Car.category_id, Car.name)
+        tmpl = env.get_template('participants.html')
+        return tmpl.render(cars=cars)
+
     @cherrypy.expose
     def results(self, cat=None, refresh=None):
         results = Heat.query.order_by(Heat.category_id, Heat.id, Heat.lane)

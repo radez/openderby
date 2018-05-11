@@ -1,0 +1,64 @@
+<html lang="en">
+<head>
+    <title>OpenDerby Participants</title>
+    <style>
+        h2 h3 {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <p><br><p><br><p>
+    {% set cats = [] %}
+    {% for car in cars %}
+        {% if car.category_id not in cats %}
+        {% if cats %}</table>{% endif %}
+        {% set _ = cats.append(car.category_id) %}
+        <table border=1 cellspacing=0 cellpadding=10>
+            <h2 id="category">Participants in category: {{ car.category }}</h2>
+            <tr id="header">
+                <td><h3>Car</h3></td>
+                <td><h3>Driver</h3></td>
+                <td><h3>Category</h3></td>
+            </tr>
+        {% endif %}
+            <tr id="car">
+                <td>{{ car.name }}</td>
+                <td>{{ car.driver }}</td>
+                <td>{{ car.category.name }}</td>
+            </tr>
+    {% else %}
+        <h2>No Participants Registered</h2>
+    {% endfor %}
+        {% if cats %}</table>
+        <script type="text/javascript">
+            if (document.body.scrollHeight > document.body.clientHeight) {
+                var scroll = setInterval(function(){ window.scrollBy(0,1); }, 100);
+                window.onscroll = function(ev) {
+                    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                        setTimeout(function(){
+                            window.scrollTo(0, 0);
+                            window.location.reload(1);
+                        }, 5000);
+                    }
+                };
+            } else {
+                setTimeout(function(){
+                   window.location.reload(1);
+                }, 15000);
+            };
+        </script>
+        {% else %}
+        <script type="text/javascript">
+          document.addEventListener('DOMContentLoaded', function() {
+              var el = document.getElementById("heat{{ anchor }}");
+              el.scrollIntoView( false );
+          }, false);
+          setTimeout(function(){
+             window.location.reload(1);
+          }, 30000);
+        </script>
+        {% endif %}
+    <p><br><p><br><p>
+</body>
+</html>

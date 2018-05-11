@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import render_template
 #from flask.ext.cache import Cache
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 
 # stackoverflow.com/questions/16469456/application-scope-variables-in-flask
 class OpenDerby(Flask):

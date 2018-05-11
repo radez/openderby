@@ -49,7 +49,8 @@ class SAEnginePlugin(plugins.SimplePlugin):
     def start(self):
         #db_path = os.path.abspath(os.path.join(os.curdir, 'my.db'))
         #self.sa_engine = create_engine('sqlite:///%s' % db_path, echo=True)
-        self.sa_engine = create_engine('mysql://root:@localhost/openderby', echo=True)
+        self.sa_engine = create_engine('mysql://root:@localhost/openderby', echo=True,
+                 isolation_level="READ UNCOMMITTED")
         #Model.metadata.create_all(self.sa_engine)
 
     def stop(self):

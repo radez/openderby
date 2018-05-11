@@ -78,7 +78,9 @@ def main():
 
 
     cherrypy.tree.mount(Derby(args.host, args.port, args.ssl), '', config={
-    '/': {'tools.db.on': True},
+    '/': {'tools.db.on': True,
+          'tools.caching.on': False,
+    },
     '/ws': {
         'tools.websocket.on': True,
         'tools.websocket.handler_cls': WebSocketHandler

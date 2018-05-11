@@ -1,5 +1,5 @@
-from flask.ext.admin import Admin, BaseView, expose
-from flask.ext.admin.contrib.sqla import ModelView
+from flask_admin import Admin, BaseView, expose
+from flask_admin.contrib.sqla import ModelView
 from registration import app
 
 db = app.db
